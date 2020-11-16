@@ -16,6 +16,9 @@ cd catkin_ws
 catkin_make
 
 rqt --standalone manohar_rqt_mypkg
+
+ALSO TRY
+rqt --force-discover --standalone rovenso_rqt_outdoordemo
 ```
 
 
@@ -52,8 +55,14 @@ type: The address of your gui element class.
     MyPlugin --> name of your class.
 ```
 
+### Step-5: Edit setup.py
+Write the name of your package here inplace of `manohar_rqt_pkg`. 
 
-### Step-5: src/{my-pkg-name}/my_module.py
+### Step-6: Edit scripts/manohar_rqt_pkg.py
+Rename this file to your package name. Also edit the contents to indicate your package. 
+
+
+### Step-6: src/{my-pkg-name}/my_module.py
 This is the main gui class. Most importantly you will see (in the constructor)
 a .ui file being loaded. This .ui file can be found under `resource/MyPlugin2.ui`.
 This can be created using the tool `QtDesigner`.
@@ -63,7 +72,7 @@ rosnode, so you can also define ros Publishers and Subscribers here.
 Please see [this](http://wiki.ros.org/rqt/Tutorials/Writing%20a%20Python%20Plugin)
 for details on how to define this class.
 
-### Step-6: Custom .ui file
+### Step-7: Custom .ui file
 
 Use Qt Designer to create a GUI. Be sure to have it of the type QWidget.
 You can have a look at the .ui file (an XML) to know the type. If it is QDialog for example, it will
