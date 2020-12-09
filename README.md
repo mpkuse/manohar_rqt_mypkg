@@ -2,6 +2,8 @@
 
 A sample rqt plugin. Use this as a template to create your own rqt_plugins
 
+Also keyboard events work. Please refer to the code to see how to get it running. 
+
 ![Alt-text](./docs/sample_gui.png)
 
 ## SIGNALS and SLOTS
