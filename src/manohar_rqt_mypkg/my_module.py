@@ -1,13 +1,28 @@
 import os
+
+# ROS
 import rospy
 import rospkg
+from std_msgs.msg import String
 
+# RQT
 from qt_gui.plugin import Plugin
 from python_qt_binding import loadUi
 from python_qt_binding.QtWidgets import QWidget
-from python_qt_binding.QtCore import Qt
+from python_qt_binding.QtCore import Qt, QObject, pyqtSignal
 
+# Misc Python
 import subprocess
+
+
+
+class MyXObject( QObject ):
+    """ Sub-classing to define custom signals """
+
+    custom_signal = pyqtSignal( str )
+    ### Also bear in mind that if you implement __init__ on your subclass of QObject you also have to call the superclass __init__
+    ### to keep it simple, do not define a __init__ unless absolutely needed
+
 
 class MyXWidget(QWidget):
     """ Sub-classing to capture keyboard events.
@@ -19,6 +34,8 @@ class MyXWidget(QWidget):
         super(MyXWidget, self).__init__()
         self.call_me_on_keypress = call_me_on_keypress
 
+        self.custom_object = MyXObject()
+
 
 
     def keyPressEvent(self, event):
@@ -29,6 +46,20 @@ class MyXWidget(QWidget):
 
 
 class MyPlugin(Plugin):
+    def my_callback( self, data ):
+        print( 'rcvd: ', data.data )
+
+        self._widget.custom_object.custom_signal.emit( str( data.data) )
+        # Note: It is NOT OK to modify the GUI here. Particularly do add data into self._widget.qlabel.setText() etc here.
+        # This is because, the callback and the GUI elements reside in different threads.
+        # This will usually simply crash (in some occasions it might not crash) Dont get a false sense of security with it. Do the right thing.
+
+    def _handle_custom_signal( self, string_data ):
+        print( 'custom signal handle: ', string_data )
+
+        # Here it is ok to modify the GUI. This function is essentially called upon ros-callback. However this is in the same thread as the GUI elements
+
+
     def customKeyPressEvent(self, event):
         print( 'custom keypressevent')
 
@@ -79,8 +110,6 @@ class MyPlugin(Plugin):
         context.add_widget(self._widget)
 
 
-        # TODO:
-
 
         # Register SLOTS
         self._widget.clearTextButton.clicked[bool].connect( self._handle_clear )
@@ -92,6 +121,15 @@ class MyPlugin(Plugin):
         self._widget.killJoysticks.clicked[bool].connect( self._handle_kill_joysticks )
 
         self._widget.startDemoButton.clicked[bool].connect( self._handle_start_demo )
+
+
+        # ros callback
+        print( "subscribe to: topic_type=String topic_name=/chatter")
+        rospy.Subscriber("/chatter", String, self.my_callback )
+        self._widget.custom_object.custom_signal.connect( self._handle_custom_signal )
+
+
+
 
 
     def shutdown_plugin(self):
